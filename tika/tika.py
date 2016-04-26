@@ -60,7 +60,7 @@ Example usage as python client:
 
 """
 
-import sys, os, getopt, time, codecs
+import sys, os, getopt, time, codecs, re
 try:
     unicode_string = unicode 
     binary_string = str
@@ -266,7 +266,9 @@ def detectType1(option, urlOrPath, serverEndpoint=ServerEndpoint, verbose=Verbos
             {'Accept': responseMimeType, 'Content-Disposition': 'attachment; filename=%s' % os.path.basename(path)},
             verbose, tikaServerJar)
     if csvOutput == 1:
-        return(status, urlOrPath.decode("UTF-8") + "," + response)
+        # Path / url to UTF-8, strip any surrogate pairs
+        pathOut = stripSurrogatePairs(urlOrPath.decode("UTF-8"))
+        return(status, pathOut + "," + response)
     else:
         return (status, response)
 
@@ -422,6 +424,48 @@ def checkPortIsOpen(remoteServerHost=ServerHost, port = Port):
     except socket.error:
         print("Couldn't connect to server")
         sys.exit()
+
+
+def stripSurrogatePairs(ustring):
+
+    # Removes surrogate pairs from a Unicode string
+
+    # This works for Python 3.x, but not for 2.x!
+    # Source: http://stackoverflow.com/q/19649463/1209004
+
+    if sys.version.startswith("3"):
+        try:
+            ustring.encode('utf-8')
+        except UnicodeEncodeError:
+            # Strip away surrogate pairs
+            tmp = ustring.encode('utf-8', 'surrogateescape')
+            ustring = tmp.decode('utf-8', 'ignore')
+
+    # In Python 2.x we need to use regex
+    # Source: http://stackoverflow.com/a/18674109/1209004
+
+    if sys.version.startswith("2"):
+        # Generate regex for surrogate pair detection
+
+        lone = re.compile(
+            u(r"""(?x)            # verbose expression (allows comments)
+            (                    # begin group
+            [\ud800-\udbff]      #   match leading surrogate
+            (?![\udc00-\udfff])  #   but only if not followed by trailing surrogate
+            )                    # end group
+            |                    #  OR
+            (                    # begin group
+            (?<![\ud800-\udbff]) #   if not preceded by leading surrogate
+            [\udc00-\udfff]      #   match trailing surrogate
+            )                   # end group
+            """))
+   
+        # Remove surrogates (i.e. replace by empty string) 
+        tmp = lone.sub(r'',ustring).encode('utf-8')
+        ustring = tmp.decode('utf-8')
+
+    return(ustring)
+
 
 def main(argv=None):
     """Run Tika from command line according to USAGE."""
