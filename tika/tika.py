@@ -506,7 +506,7 @@ def parseCommandLine():
     parser_config.add_argument('type',
                         choices=['mime-types','detectors', 'parsers'],
                         action='store',
-                        nargs'?',
+                        nargs='?',
                         help='specifies configuration to be displayed: supported mime-types, installed detectors \
                             or installed parsers')
     parser.add_argument('urlOrPathToFile',
