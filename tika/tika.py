@@ -454,7 +454,8 @@ def parseCommandLine():
                         default='False',
                         help="encode response in UTF-8")
     # Sub-parsers for parse, detect, language, translate and config commands
-    subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers(help='sub-command help',
+                        dest="subcommand")
 
     parser_parse = subparsers.add_parser('parse',
                         help='parse the input file and write a JSON doc file.ext_meta.json containing the extracted metadata, text, or both')
