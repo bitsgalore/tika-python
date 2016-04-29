@@ -479,6 +479,11 @@ def parseCommandLine():
                         nargs='?',
                         help='tells Tika what to detect (currently filetype only)')
                         # Note: could be dropped, because doesn't have any meaningful function?
+    parser_detect.add_argument('urlOrPathToFile',
+                        action='store',
+                        type=str,
+                        nargs='?',
+                        help='file(s) to be analysed; if URL, it will first be retrieved and then passed to Tika')
     parser_detect.add_argument('--csv', '-c',
                         action='store_true',
                         dest='csvOutput',
@@ -492,7 +497,12 @@ def parseCommandLine():
                         action='store',
                         nargs='?',
                         help='tells Tika to detect language of file')
-                        # Note: could be dropped, because doesn't have any meaningful function? 
+                        # Note: could be dropped, because doesn't have any meaningful function?
+    parser_language.add_argument('urlOrPathToFile',
+                        action='store',
+                        type=str,
+                        nargs='?',
+                        help='file(s) to be analysed; if URL, it will first be retrieved and then passed to Tika') 
     parser_translate = subparsers.add_parser('translate',
                         help='parse and extract text and then translate the text from source language \
                             to destination language')
@@ -501,6 +511,11 @@ def parseCommandLine():
                         nargs='?',
                         help='express translatePath as src:dest, where src and dest are 2-character codes \
                             that specify source and destination language (e.g. en:fr)')
+    parser_translate.add_argument('urlOrPathToFile',
+                        action='store',
+                        type=str,
+                        nargs='?',
+                        help='file(s) to be translated; if URL, it will first be retrieved and then passed to Tika')
     parser_config = subparsers.add_parser('config',
                         help='return a JSON doc describing the configuration of the Tika server')
     parser_config.add_argument('type',
@@ -509,12 +524,6 @@ def parseCommandLine():
                         nargs='?',
                         help='specifies configuration to be displayed: supported mime-types, installed detectors \
                             or installed parsers')
-    parser.add_argument('urlOrPathToFile',
-                        action='store',
-                        type=str,
-                        nargs='+',
-                        help='file(s) to be parsed, if URL it will first be retrieved and then passed to Tika')
-
     # Parse arguments
     args = parser.parse_args()
 
