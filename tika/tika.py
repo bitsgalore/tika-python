@@ -111,9 +111,9 @@ Translator = os.getenv(
     "org.apache.tika.language.translate.Lingo24Translator")
 TikaClientOnly = os.getenv('TIKA_CLIENT_ONLY', False)
 
-Verbose = 0
-EncodeUtf8 = 0
-csvOutput = 0
+Verbose = False
+EncodeUtf8 = False
+csvOutput = False
 
 def echo2(*s): sys.stderr.write(unicode_string('tika.py: %s\n') % unicode_string(' ').join(map(unicode_string, s)))
 def warn(*s):  echo2('Warn:', *s)
@@ -447,62 +447,73 @@ def parseCommandLine():
                         action='store',
                         dest='outDir',
                         default='.',
-                        help="use a remote Tika Server at this endpoint, otherwise use local server")
+                        help='use a remote Tika Server at this endpoint, otherwise use local server')
     parser.add_argument('--encode', '-e',
                         action='store_true',
                         dest='EncodeUtf8 ',
-                        default='False',
-                        help="encode response in UTF-8")
+                        default=False,
+                        help='encode response in UTF-8')
+    parser.add_argument('--verbose', '-v',
+                        action='store_true',
+                        dest='Verbose',
+                        default=False,
+                        help='verbose mode')
+
     # Sub-parsers for parse, detect, language, translate and config commands
     subparsers = parser.add_subparsers(help='sub-command help',
-                        dest="subcommand")
+                        dest='subcommand')
 
     parser_parse = subparsers.add_parser('parse',
-                        help='parse the input file and write a JSON doc file.ext_meta.json containing the extracted metadata, text, or both')
+                        help='parse the input file and write a JSON doc file.ext_meta.json containing \
+                            the extracted metadata, text, or both')
     parser_parse.add_argument('type',
                         choices=['meta', 'text', 'all'],
                         action='store',
                         nargs='?',
-                        help="tells Tika what to parse: metadata, text or both")                      
+                        help='tells Tika what to parse: metadata, text or both')                      
     parser_detect = subparsers.add_parser('detect',
                         help='parse the stream and detect the MIME/media type, return in text/plain')
     parser_detect.add_argument('type',
                         choices=['type'],
                         action='store',
                         nargs='?',
-                        help="tells Tika what to detect (currently filetype only)")
+                        help='tells Tika what to detect (currently filetype only)')
                         # Note: could be dropped, because doesn't have any meaningful function?
     parser_detect.add_argument('--csv', '-c',
                         action='store_true',
                         dest='csvOutput',
-                        default='False',
-                        help="report output in comma-delimited format, including file paths/names")
+                        default=False,
+                        help='report output in comma-delimited format, including file paths/names')
     parser_language = subparsers.add_parser('language',
-                        help='parse the file stream and identify the language of the text, return its 2 character code in text/plain')
+                        help='parse the file stream and identify the language of the text, return its \
+                            2 character code in text/plain')
     parser_language.add_argument('file',
                         choices=['file'],
                         action='store',
                         nargs='?',
-                        help="tells Tika to detect language of file")
+                        help='tells Tika to detect language of file')
                         # Note: could be dropped, because doesn't have any meaningful function? 
     parser_translate = subparsers.add_parser('translate',
-                        help='parse and extract text and then translate the text from source language to destination language')
+                        help='parse and extract text and then translate the text from source language \
+                            to destination language')
     parser_translate.add_argument('translatePath',
                         action='store',
                         nargs='?',
-                        help="express translatePath as src:dest, where src and dest are 2-character codes that specify source and destination language (e.g. en:fr)")
+                        help='express translatePath as src:dest, where src and dest are 2-character codes \
+                            that specify source and destination language (e.g. en:fr)')
     parser_config = subparsers.add_parser('config',
                         help='return a JSON doc describing the configuration of the Tika server')
     parser_config.add_argument('type',
                         choices=['mime-types','detectors', 'parsers'],
                         action='store',
-                        nargs='?',
-                        help="specifies configuration to be displayed: supported mime-types, installed detectors or installed parsers")
+                        nargs'?',
+                        help='specifies configuration to be displayed: supported mime-types, installed detectors \
+                            or installed parsers')
     parser.add_argument('urlOrPathToFile',
-                        action="store",
+                        action='store',
                         type=str,
                         nargs='+',
-                        help="file(s) to be parsed, if URL it will first be retrieved and then passed to Tika")
+                        help='file(s) to be parsed, if URL it will first be retrieved and then passed to Tika')
 
     # Parse arguments
     args = parser.parse_args()
@@ -510,8 +521,7 @@ def parseCommandLine():
     return(args)
 
 
-
-def maino(argv=None):
+def mainOld(argv=None):
     """Run Tika from command line according to USAGE."""
     global Verbose
     global EncodeUtf8
@@ -551,6 +561,10 @@ def maino(argv=None):
     return runCommand(cmd, option, paths, port, outDir, serverHost=serverHost, tikaServerJar=tikaServerJar, verbose=Verbose, encode=EncodeUtf8)
 
 def main():
+
+    # To do: re-write main, taking all arguments from args. Note that
+    # some former 1/0 flags are now True/False; may need mods elsewhere in code.   
+
     # Get input from command line
     args = parseCommandLine()
     print(args)
