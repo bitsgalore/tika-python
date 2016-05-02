@@ -467,7 +467,6 @@ def parseCommandLine():
 
     # Sub-parsers for parse, detect, language, translate and config commands
     subparsers = parser.add_subparsers(help='sub-command help',
-                        choices=['parse', 'detect', 'language', 'translate','config'],
                         dest='subcommand')
 
     parser_parse = subparsers.add_parser('parse',
