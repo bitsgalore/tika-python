@@ -442,6 +442,12 @@ def parseCommandLine():
                         dest='serverHost',
                         default=ServerHost,
                         help='use a remote Tika Server at this endpoint, otherwise use local server')
+    parser.add_argument('--port',
+                        metavar='portNumber',
+                        action='store',
+                        dest='port',
+                        default=Port,
+                        help='set port number (default: 9998)')
     parser.add_argument('--out', '-o',
                         metavar='outputDir',
                         action='store',
@@ -450,7 +456,7 @@ def parseCommandLine():
                         help='use a remote Tika Server at this endpoint, otherwise use local server')
     parser.add_argument('--encode', '-e',
                         action='store_true',
-                        dest='EncodeUtf8 ',
+                        dest='EncodeUtf8',
                         default=False,
                         help='encode response in UTF-8')
     parser.add_argument('--verbose', '-v',
@@ -461,20 +467,26 @@ def parseCommandLine():
 
     # Sub-parsers for parse, detect, language, translate and config commands
     subparsers = parser.add_subparsers(help='sub-command help',
+                        choices=['parse', 'detect', 'language', 'translate','config'],
                         dest='subcommand')
 
     parser_parse = subparsers.add_parser('parse',
                         help='parse the input file and write a JSON doc file.ext_meta.json containing \
                             the extracted metadata, text, or both')
-    parser_parse.add_argument('type',
+    parser_parse.add_argument('ptype',
                         choices=['meta', 'text', 'all'],
                         action='store',
                         nargs='?',
-                        help='tells Tika what to parse: metadata, text or both')                      
+                        help='tells Tika what to parse: metadata, text or both')
+    parser_parse.add_argument('urlOrPathToFile',
+                        action='store',
+                        type=str,
+                        nargs='?',
+                        help='file(s) to be analysed; if URL, it will first be retrieved and then passed to Tika')                      
     parser_detect = subparsers.add_parser('detect',
                         help='parse the stream and detect the MIME/media type, return in text/plain')
-    parser_detect.add_argument('type',
-                        choices=['type'],
+    parser_detect.add_argument('dtype',
+                        choices=['dtype'],
                         action='store',
                         nargs='?',
                         help='tells Tika what to detect (currently filetype only)')
@@ -492,8 +504,8 @@ def parseCommandLine():
     parser_language = subparsers.add_parser('language',
                         help='parse the file stream and identify the language of the text, return its \
                             2 character code in text/plain')
-    parser_language.add_argument('file',
-                        choices=['file'],
+    parser_language.add_argument('lfile',
+                        choices=['lfile'],
                         action='store',
                         nargs='?',
                         help='tells Tika to detect language of file')
@@ -518,7 +530,7 @@ def parseCommandLine():
                         help='file(s) to be translated; if URL, it will first be retrieved and then passed to Tika')
     parser_config = subparsers.add_parser('config',
                         help='return a JSON doc describing the configuration of the Tika server')
-    parser_config.add_argument('type',
+    parser_config.add_argument('ctype',
                         choices=['mime-types','detectors', 'parsers'],
                         action='store',
                         nargs='?',
@@ -572,11 +584,36 @@ def mainOld(argv=None):
 def main():
 
     # To do: re-write main, taking all arguments from args. Note that
-    # some former 1/0 flags are now True/False; may need mods elsewhere in code.   
+    # some former 1/0 flags are now True/False; may need mods elsewhere in code. 
+
+    global Verbose
+    global EncodeUtf8
+    global csvOutput
 
     # Get input from command line
     args = parseCommandLine()
-    print(args)
+
+    tikaServerJar = args.tikaServerJar
+    serverHost = args.serverHost
+    port = args.port
+    outDir = args.outDir
+    EncodeUtf8 = args.EncodeUtf8
+    Verbose = args.Verbose
+    subcommand = args.subcommand
+    if subcommand == "parse":
+        ptype = args.ptype
+    elif subcommand == "detect":
+        dtype = args.dtype
+        csvOutput = args.csvOutput
+    elif subcommand == "language":
+        lfile = args.lfile
+    elif subcommand == "translate":
+        translatePath = args.translatePath
+    elif subcommand == "config":
+        ctype = args.ctype
+
+    if subcommand != "config":
+        urlOrPathToFile = args.urlOrPathToFile
 
 
 if __name__ == '__main__':
