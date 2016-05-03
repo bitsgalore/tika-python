@@ -541,7 +541,7 @@ def parseCommandLine():
     return(args)
 
 
-def mainOld(argv=None):
+def main(argv=None):
     """Run Tika from command line according to USAGE."""
     global Verbose
     global EncodeUtf8
@@ -578,7 +578,8 @@ def mainOld(argv=None):
         paths = argv[2:]
     except:
         paths = None
-    return runCommand(cmd, option, paths, port, outDir, serverHost=serverHost, tikaServerJar=tikaServerJar, verbose=Verbose, encode=EncodeUtf8)
+    #return runCommand(cmd, option, paths, port, outDir, serverHost=serverHost, tikaServerJar=tikaServerJar, verbose=Verbose, encode=EncodeUtf8)
+    print(option)
 
 def main():
 
@@ -613,6 +614,45 @@ def main():
 
     if subcommand != "config":
         urlOrPathToFile = args.urlOrPathToFile
+    
+    cmd = subcommand
+
+    # Lines below just make things compatible with the existing code; ideally "option" could 
+    # be abandoned altogether, because it only conveys meaningful information in case of the
+    # parse subcommand
+    if subcommand == "parse":
+        option = ptype
+    elif subcommand == "detect":
+        option = dtype
+    elif subcommand == "language":
+        option = lfile
+    elif subcommand == "config":
+        option = ctype
+
+    # Lines below convert Boolean flags to 1/0 flags in function calls
+    # Change function calls later, then these lines can be removed
+
+    if Verbose == True:
+        Verbose = 1
+    else:
+        Verbose = 0
+
+    if EncodeUtf8 == True:
+        EncodeUtf8 = 1
+    else:
+        EncodeUtf8 = 0
+
+    if csvOutput == True:
+        csvOutput = 1
+    else:
+        csvOutput = 0
+
+    try:
+        paths = urlOrPathToFile
+    except:
+        paths = None
+    return runCommand(cmd, option, paths, port, outDir, serverHost=serverHost, tikaServerJar=tikaServerJar, verbose=Verbose, encode=EncodeUtf8)
+
 
 
 if __name__ == '__main__':
